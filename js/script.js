@@ -98,7 +98,7 @@ function endGame(draw, currentClass) {
     if (draw) {
         messageElement.textContent = 'Draw!';
     } else {
-        messageElement.textContent = `${oTurn ? "O's" : "X's"} Wins!`;
+        messageElement.textContent = `${oTurn ? "🦈" : "🐧"} Wins!`;
         updateScoreboard(currentClass);
         drawWinLine(checkWin(currentClass));
     }
