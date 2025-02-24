@@ -1,0 +1,82 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    text-align: center;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+    width: 80vmin; /* Maintain 1:1 ratio */
+    height: 80vmin; /* Maintain 1:1 ratio */
+    position: relative;
+}
+
+.cell {
+    background-color: #fff;
+    border: 2px solid #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 5vw;
+    cursor: pointer;
+}
+
+.cell.x::before {
+    content: '🐧'; /* Penguin emoji */
+}
+
+.cell.o::before {
+    content: '🦈'; /* Shark emoji */
+}
+
+#mode-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.message {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.scoreboard {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 1.2em;
+}
+
+.scoreboard div {
+    display: flex;
+    align-items: center;
+}
+
+.scoreboard div span {
+    margin-left: 5px;
+}
+
+.win-line {
+    position: absolute;
+    background-color: red;
+    height: 5px;
+    width: 0;
+    transform-origin: left;
+    transition: width 0.5s ease;
+}
