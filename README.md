@@ -1,3 +1,9 @@
 # Tic Tac Toe
-* PvC of PvP
-* PC plays randomly, but completes a win if he can, and blocks if needed
+game modes;
+- PvP
+- PvC
+- CvC
+PC logic;
+    * completes a win if possible
+    * block opponent if needed
+    * choose randomly
