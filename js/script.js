@@ -288,5 +288,6 @@ function sendAjaxRequest() {
 
 
 window.addEventListener('resize', resizeBoard);
+Math.seedrandom(Date.now());
 startGame();
 resizeBoard(); // Call resizeBoard when the game starts
