@@ -11,8 +11,9 @@ let isP2Human = false; // Set 2'nd player to computer
 let isP1Turn = true; // Variable to track whose turn it is to start
 let P1Score = 0;
 let P2Score = 0;
+let listOfRandomNumberFromWeb = [];
 const pvc_wait_time = 500;
-const cvc_wait_time = 100;
+const cvc_wait_time = 200;
 
 // Toggle buttons
 const p1ModeToggle = document.getElementById('p1-mode-toggle');
@@ -173,41 +174,26 @@ function computerMove() {
     }
 
     // If no immediate win or block, choose a random cell
-    const randomCell = availableCells[Math.floor(randomNumber() * availableCells.length)];
+    console.log(listOfRandomNumberFromWeb.length)
+    const randomCell = availableCells[Math.floor(randomNumberFromWeb() * availableCells.length)];
     placeMark(randomCell, currentClass);
     if (checkEndGame(currentClass)) return;
     swapTurns();
 }
 
 
-function randomNumber() {
-    const QRN_URL = "https://api.quantumnumbers.anu.edu.au/";
-    const QRN_KEY = "";
-    const DTYPE = "uint16"; // "uint8", "uint16", "hex8", "hex16"
-    const LENGTH = 1; // between 1 and 1024
-    const BLOCKSIZE = 1; // between 1 and 10. Only needed for "hex8" and "hex16"
-
-    const params = new URLSearchParams({
-        length: LENGTH,
-        type: DTYPE,
-        size: BLOCKSIZE
-    });
-
-    // try {
-    //     const response = await fetch(`${QRN_URL}?${params.toString()}`, {
-    //         headers: {
-    //             "x-api-key": QRN_KEY
-    //         }
-    //     });
-    //     const data = await response.json();
-    //     console.log(data);
-    //     titleElement.textContent = data;
-    //     return data/65535;
-    // } catch (error) {
-    //     console.error('Fetch Error:', error);
-    //     return Math.random();
-    // }
-    return Math.random();
+function randomNumberFromWeb() {
+    const minNum = parseInt($('.dice-ajax-form input[name="min_num"]').val(), 10);
+    const maxNum = parseInt($('.dice-ajax-form input[name="max_num"]').val(), 10);
+    if (listOfRandomNumberFromWeb.length > 0) {
+        Qn = true
+        myRandomNumber = (listOfRandomNumberFromWeb.pop()-minNum)/(maxNum-minNum);
+    } else {
+        Qn = false
+        myRandomNumber = Math.random();
+    }
+    titleElement.textContent = `${Qn ? 'q' : ''}🎲 ${myRandomNumber}`;
+    return myRandomNumber;
 }
 
 
@@ -244,7 +230,6 @@ function drawWinLine(combination) {
     const endCell = cells[end];
     const startRect = startCell.getBoundingClientRect();
     const endRect = endCell.getBoundingClientRect();
-    const boardRect = document.querySelector('.board').getBoundingClientRect();
 
     const x1 = startRect.left + startRect.width / 2;
     const y1 = startRect.top + startRect.height / 2;
@@ -258,6 +243,47 @@ function drawWinLine(combination) {
     winLineElement.style.transform = `rotate(${angle}rad)`;
     winLineElement.style.left = `${x1}px`;
     winLineElement.style.top = `${y1}px`;
+}
+
+
+jQuery(document).ready(function($) {
+    $('.dice-ajax-form').on('submit', function(e) {
+        e.preventDefault();
+        // send the ajax request, populate the list of random numbers
+        sendAjaxRequest().then((data) => {
+            listOfRandomNumberFromWeb = data.flat();
+        }).catch((err) => {
+            console.log(err);
+        });
+    });
+});
+
+
+function sendAjaxRequest() {
+    var $form = $('.dice-ajax-form');
+
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: "POST",
+            url: 'https://cors-anywhere.herokuapp.com/' + $form.attr('action'), 
+            data: $form.serialize(),
+            dataType: 'json',
+            success: function(data) {
+                var obj = JSON.parse(data);
+                if (obj.type == "success") {
+                    console.log("Your quantum random numbers are:<br/>");
+                    console.log(obj.output);
+                    resolve(obj.output);
+                } else {
+                    console.log(obj.message);
+                    reject(obj.message);
+                }
+            },
+            error: function(err) {
+                reject(err);
+            }
+        });
+    });
 }
 
 

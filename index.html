@@ -29,4 +29,35 @@
     <div class="win-line" id="win-line"></div>
     <script src="js/script.js" defer></script>
 </body>
+
+<form id="dice-ajax-form" class="dice-ajax-form" method="post" action="https://qrng.anu.edu.au/wp-admin/admin-ajax.php">
+    <input type="radio" name="repeats" value="norepeat" id="norep"> without replacements
+    <input type="radio" name="repeats" value="yesrepeat" checked="checked" id="rep">  with replacements    
+    <table>
+    <tbody><tr>
+    <td>How many sets of numbers do you want to generate? (1–50)</td>
+    <td><input type="text" name="set_num" value="2" size="10"></td>
+    </tr>
+    <tr>
+    <td>How many numbers in each set? (1–500)</td>
+    <td><input type="text" name="rep_num" value="100" size="10"></td>
+    </tr>    
+    <tr>
+    <td>Minimum number? (0–4999999)</td>
+    <td><input type="text" name="min_num" id="min_num" value="0" size="10"></td>
+    </tr>
+    
+    <tr>
+    <td>Maximum number? (0–4999999)</td>
+    <td><input type="text" name="max_num" id="max_num" value="4999999" size="10"></td>
+    </tr>
+    
+    </tbody></table>
+    
+    
+    <input type="hidden" name="action" value="dice_action">
+    <input type="hidden" id="dice_nonce_field" name="dice_nonce_field" value="2e46e62be8"><input type="hidden" name="_wp_http_referer" value="/dice-throw/"><button>Get quantum numbers</button>
+</form>
+    <!-- Other head content -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </html>
