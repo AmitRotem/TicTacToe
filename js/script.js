@@ -261,11 +261,12 @@ jQuery(document).ready(function($) {
 
 function sendAjaxRequest() {
     var $form = $('.dice-ajax-form');
-
+    proxy = 'https://cors-anywhere.herokuapp.com/';
     return new Promise((resolve, reject) => {
         $.ajax({
             type: "POST",
-            url: 'https://cors-anywhere.herokuapp.com/' + $form.attr('action'), 
+            // url: proxy + $form.attr('action'),
+            url: $form.attr('action'),
             data: $form.serialize(),
             dataType: 'json',
             success: function(data) {
