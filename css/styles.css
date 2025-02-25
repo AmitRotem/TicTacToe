@@ -33,19 +33,28 @@ h1 {
     cursor: pointer;
 }
 
-.cell.x::before {
+.cell.p1::before {
     content: '🐧'; /* Penguin emoji */
 }
 
-.cell.o::before {
+.cell.p2::before {
     content: '🦈'; /* Shark emoji */
 }
 
-#mode-toggle {
+#p1-mode-toggle {
     position: absolute;
     top: 10px;
     right: 10px;
-    padding: 10px 20px;
+    padding: 5px 10px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+#p2-mode-toggle {
+    position: absolute;
+    top: 45px;
+    right: 10px;
+    padding: 5px 10px;
     font-size: 1em;
     cursor: pointer;
 }
@@ -75,7 +84,7 @@ h1 {
 .win-line {
     position: absolute;
     background-color: red;
-    height: 5px;
+    height: 7px;
     width: 0;
     transform-origin: left;
     transition: width 0.5s ease;

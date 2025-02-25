@@ -1,76 +1,121 @@
 const cells = document.querySelectorAll('[data-cell]');
-const X_CLASS = 'x';
-const O_CLASS = 'o';
-const modeToggle = document.getElementById('mode-toggle');
+const P1_CLASS = 'p1';
+const P2_CLASS = 'p2';
+const titleElement = document.getElementById('title');
 const messageElement = document.getElementById('message');
-const xScoreElement = document.getElementById('x-score');
-const oScoreElement = document.getElementById('o-score');
+const p1ScoreElement = document.getElementById('p1-score');
+const p2ScoreElement = document.getElementById('p2-score');
 const winLineElement = document.getElementById('win-line');
-let oTurn;
-let isPvC = true; // Set PvC as the default mode
-let isHumanTurn = true; // Variable to track whose turn it is to start
-let xScore = 0;
-let oScore = 0;
+let isP1Human = false; // Set 1'st player to human
+let isP2Human = false; // Set 2'nd player to computer
+let isP1Turn = true; // Variable to track whose turn it is to start
+let P1Score = 0;
+let P2Score = 0;
+const pvc_wait_time = 500;
+const cvc_wait_time = 100;
 
-modeToggle.textContent = isPvC ? 'Switch to PvP' : 'Switch to PvC'; // Update button text
+// Toggle buttons
+const p1ModeToggle = document.getElementById('p1-mode-toggle');
+const p2ModeToggle = document.getElementById('p2-mode-toggle');
 
-modeToggle.addEventListener('click', () => {
-    isPvC = !isPvC;
-    modeToggle.textContent = isPvC ? 'Switch to PvP' : 'Switch to PvC';
+
+p1ModeToggle.textContent = isP1Human ? 'P1: Human' : 'P1: Computer';
+p1ModeToggle.addEventListener('click', () => {
+    isP1Human = !isP1Human;
+    p1ModeToggle.textContent = isP1Human ? 'P1: Human' : 'P1: Computer';
     resetScoreboard();
     startGame();
 });
 
-window.addEventListener('resize', resizeBoard);
 
-startGame();
+p2ModeToggle.textContent = isP2Human ? 'P2: Human' : 'P2: Computer';
+p2ModeToggle.addEventListener('click', () => {
+    isP2Human = !isP2Human;
+    p2ModeToggle.textContent = isP2Human ? 'P2: Human' : 'P2: Computer';
+    resetScoreboard();
+    startGame();
+});
+
+
 
 function startGame() {
-    oTurn = !isHumanTurn; // Set oTurn based on whose turn it is to start
-    messageElement.textContent = ''; // Clear the message
+    disableClicks();
+    messageElement.textContent = `${isP1Turn ? "🐧" : "🦈"} goes first!`; // Indicate who goes first
     winLineElement.style.width = '0'; // Clear the win line
-    cells.forEach(cell => {
-        cell.classList.remove(X_CLASS);
-        cell.classList.remove(O_CLASS);
-        cell.removeEventListener('click', handleClick);
-        cell.addEventListener('click', handleClick, { once: true });
+    cells.forEach(cell => { // Clear the board
+        cell.classList.remove(P1_CLASS);
+        cell.classList.remove(P2_CLASS);
     });
+    nextTurn();
+}
 
-    // If it's the computer's turn to start in PvC mode, make the first move
-    if (isPvC && oTurn) {
-        setTimeout(computerMove, 500); // Add a 500ms delay before the computer moves
+
+function nextTurn() {
+    if ((isP1Turn && isP1Human) || (!isP1Turn && isP2Human))  { // Human player's turn
+        enableClicks();
+    } else { // Computer player's turn
+        setTimeout(computerMove, (isP1Human || isP2Human) ? pvc_wait_time : cvc_wait_time); // Add a 500ms delay before the computer moves
     }
 }
+
+
+function disableClicks() {
+    cells.forEach(cell => {
+        cell.removeEventListener('click', handleClick);
+    });
+}
+
+
+function enableClicks() {
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleClick, { once: true });
+    });
+}
+
 
 function handleClick(e) {
     const cell = e.target;
-    if (cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS)) {
+    if (cell.classList.contains(P1_CLASS) || cell.classList.contains(P2_CLASS)) {
         return; // If the cell is already occupied, do nothing
     }
-    const currentClass = oTurn ? O_CLASS : X_CLASS;
+    disableClicks();
+    const currentClass = isP1Turn ? P1_CLASS : P2_CLASS;
     placeMark(cell, currentClass);
-    if (checkWin(currentClass)) {
-        endGame(false, currentClass);
-    } else if (isDraw()) {
-        endGame(true);
-    } else {
-        swapTurns();
-        if (isPvC && oTurn) {
-            disableClicks(); // Disable clicks during the computer's turn
-            setTimeout(computerMove, 500); // Add a 500ms delay before the computer moves
-        }
-    }
+    if (checkEndGame(currentClass)) {return;} else {swapTurns();}
 }
+
 
 function placeMark(cell, currentClass) {
     cell.classList.add(currentClass);
 }
 
-function swapTurns() {
-    oTurn = !oTurn;
+
+function checkEndGame(currentClass) {
+    if (checkWin(currentClass)) {
+        messageElement.textContent = `${isP1Turn ? "🐧" : "🦈"} Wins!`;
+        updateScoreboard(currentClass);
+        drawWinLine(checkWin(currentClass));
+        isP1Turn = !isP1Turn;
+        setTimeout(startGame, (isP1Human || isP2Human) ? 2*pvc_wait_time : 2*cvc_wait_time); // Add a 1s delay before starting the next game
+        return true;
+    } else if (isDraw()) {
+        messageElement.textContent = 'Draw!';
+        isP1Turn = !isP1Turn;
+        setTimeout(startGame, (isP1Human || isP2Human) ? 2*pvc_wait_time : 2*cvc_wait_time);
+        return true;
+    }
+    return false;
 }
 
-function checkWin(currentClass) {
+
+function swapTurns() {
+    isP1Turn = !isP1Turn;
+    messageElement.textContent = `${isP1Turn ? "🐧" : "🦈"}'s turn!`;
+    nextTurn();
+}
+
+
+function checkWin(myClass) {
     const WINNING_COMBINATIONS = [
         [0, 1, 2],
         [3, 4, 5],
@@ -83,108 +128,107 @@ function checkWin(currentClass) {
     ];
     return WINNING_COMBINATIONS.find(combination => {
         return combination.every(index => {
-            return cells[index].classList.contains(currentClass);
+            return cells[index].classList.contains(myClass);
         });
     });
 }
 
+
 function isDraw() {
     return [...cells].every(cell => {
-        return cell.classList.contains(X_CLASS) || cell.classList.contains(O_CLASS);
+        return cell.classList.contains(P1_CLASS) || cell.classList.contains(P2_CLASS);
     });
 }
 
-function endGame(draw, currentClass) {
-    if (draw) {
-        messageElement.textContent = 'Draw!';
-    } else {
-        messageElement.textContent = `${oTurn ? "🦈" : "🐧"} Wins!`;
-        updateScoreboard(currentClass);
-        drawWinLine(checkWin(currentClass));
-    }
-    cells.forEach(cell => {
-        cell.removeEventListener('click', handleClick); // Disable further clicks
-    });
-    isHumanTurn = !isHumanTurn; // Toggle the starting player for the next game
-    setTimeout(startGame, 2000); // Add a delay before starting the next game
-}
 
 function computerMove() {
     const availableCells = [...cells].filter(cell => {
-        return !cell.classList.contains(X_CLASS) && !cell.classList.contains(O_CLASS);
+        return !cell.classList.contains(P1_CLASS) && !cell.classList.contains(P2_CLASS);
     });
-
     // Check if the computer can win in the next move
+    const currentClass = isP1Turn ? P1_CLASS : P2_CLASS;
     for (let cell of availableCells) {
-        cell.classList.add(O_CLASS);
-        if (checkWin(O_CLASS)) {
-            placeMark(cell, O_CLASS);
-            endGame(false, O_CLASS);
+        cell.classList.add(currentClass);
+        if (checkWin(currentClass)) {
+            placeMark(cell, currentClass);
+            checkEndGame(currentClass);
             return;
         }
-        cell.classList.remove(O_CLASS);
+        cell.classList.remove(currentClass);
     }
-
-    // Check if the human can win in the next move and block them
+    
+    
+    // Check if the opponent can win in the next move and block
+    const otherClass = !isP1Turn ? P1_CLASS : P2_CLASS;
     for (let cell of availableCells) {
-        cell.classList.add(X_CLASS);
-        if (checkWin(X_CLASS)) {
-            cell.classList.remove(X_CLASS);
-            placeMark(cell, O_CLASS);
-            if (checkWin(O_CLASS)) {
-                endGame(false, O_CLASS);
-            } else if (isDraw()) {
-                endGame(true);
-            } else {
-                swapTurns();
-                enableClicks(); // Re-enable clicks after the computer's turn
-            }
+        cell.classList.add(otherClass);
+        if (checkWin(otherClass)) {
+            cell.classList.remove(otherClass);
+            placeMark(cell, currentClass);
+            if (checkEndGame(currentClass)) return;
+            swapTurns();
             return;
         }
-        cell.classList.remove(X_CLASS);
+        cell.classList.remove(otherClass);
     }
 
     // If no immediate win or block, choose a random cell
-    const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
-    placeMark(randomCell, O_CLASS);
-    if (checkWin(O_CLASS)) {
-        endGame(false, O_CLASS);
-    } else if (isDraw()) {
-        endGame(true);
-    } else {
-        swapTurns();
-        enableClicks(); // Re-enable clicks after the computer's turn
-    }
+    const randomCell = availableCells[Math.floor(randomNumber() * availableCells.length)];
+    placeMark(randomCell, currentClass);
+    if (checkEndGame(currentClass)) return;
+    swapTurns();
 }
 
+
+function randomNumber() {
+    const QRN_URL = "https://api.quantumnumbers.anu.edu.au/";
+    const QRN_KEY = "";
+    const DTYPE = "uint16"; // "uint8", "uint16", "hex8", "hex16"
+    const LENGTH = 1; // between 1 and 1024
+    const BLOCKSIZE = 1; // between 1 and 10. Only needed for "hex8" and "hex16"
+
+    const params = new URLSearchParams({
+        length: LENGTH,
+        type: DTYPE,
+        size: BLOCKSIZE
+    });
+
+    // try {
+    //     const response = await fetch(`${QRN_URL}?${params.toString()}`, {
+    //         headers: {
+    //             "x-api-key": QRN_KEY
+    //         }
+    //     });
+    //     const data = await response.json();
+    //     console.log(data);
+    //     titleElement.textContent = data;
+    //     return data/65535;
+    // } catch (error) {
+    //     console.error('Fetch Error:', error);
+    //     return Math.random();
+    // }
+    return Math.random();
+}
+
+
 function updateScoreboard(winner) {
-    if (winner === X_CLASS) {
-        xScore++;
-        xScoreElement.textContent = xScore;
-    } else if (winner === O_CLASS) {
-        oScore++;
-        oScoreElement.textContent = oScore;
+    if (winner === P1_CLASS) {
+        P1Score++;
+        p1ScoreElement.textContent = P1Score;
+    } else if (winner === P2_CLASS) {
+        P2Score++;
+        p2ScoreElement.textContent = P2Score;
     }
+    return;
 }
 
 function resetScoreboard() {
-    xScore = 0;
-    oScore = 0;
-    xScoreElement.textContent = xScore;
-    oScoreElement.textContent = oScore;
+    P1Score = 0;
+    P2Score = 0;
+    p1ScoreElement.textContent = 0;
+    p2ScoreElement.textContent = 0;
 }
 
-function disableClicks() {
-    cells.forEach(cell => {
-        cell.removeEventListener('click', handleClick);
-    });
-}
-
-function enableClicks() {
-    cells.forEach(cell => {
-        cell.addEventListener('click', handleClick, { once: true });
-    });
-}
 
 function resizeBoard() {
     const board = document.querySelector('.board');
@@ -202,16 +246,21 @@ function drawWinLine(combination) {
     const endRect = endCell.getBoundingClientRect();
     const boardRect = document.querySelector('.board').getBoundingClientRect();
 
-    const x1 = startRect.left + startRect.width / 2 - boardRect.left;
-    const y1 = startRect.top + startRect.height / 2 - boardRect.top;
-    const x2 = endRect.left + endRect.width / 2 - boardRect.left;
-    const y2 = endRect.top + endRect.height / 2 - boardRect.top;
-
-    const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-    const angle = Math.atan2(y2, x2) * (180 / Math.PI);
+    const x1 = startRect.left + startRect.width / 2;
+    const y1 = startRect.top + startRect.height / 2;
+    const x2 = endRect.left + endRect.width / 2;
+    const y2 = endRect.top + endRect.height / 2;
+    
+    const length = Math.hypot(x2 - x1 , y2 - y1);
+    const angle = Math.atan2(y2 - y1, x2 - x1);
 
     winLineElement.style.width = `${length}px`;
-    winLineElement.style.transform = `rotate(${angle}deg)`;
+    winLineElement.style.transform = `rotate(${angle}rad)`;
     winLineElement.style.left = `${x1}px`;
     winLineElement.style.top = `${y1}px`;
 }
+
+
+window.addEventListener('resize', resizeBoard);
+startGame();
+resizeBoard(); // Call resizeBoard when the game starts
