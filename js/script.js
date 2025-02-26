@@ -11,7 +11,6 @@ let isP2Human = false; // Set 2'nd player to computer
 let isP1Turn = true; // Variable to track whose turn it is to start
 let P1Score = 0;
 let P2Score = 0;
-let listOfRandomNumberFromWeb = [];
 const pvc_wait_time = 500;
 const cvc_wait_time = 200;
 
@@ -179,26 +178,10 @@ function computerMove() {
     }
 
     // If no immediate win or block, choose a random cell
-    console.log(listOfRandomNumberFromWeb.length)
-    const randomCell = availableCells[Math.floor(randomNumberFromWeb() * availableCells.length)];
+    const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
     placeMark(randomCell, currentClass);
     if (checkEndGame(currentClass)) return;
     swapTurns();
-}
-
-
-function randomNumberFromWeb() {
-    const minNum = parseInt($('.dice-ajax-form input[name="min_num"]').val(), 10);
-    const maxNum = parseInt($('.dice-ajax-form input[name="max_num"]').val(), 10);
-    if (listOfRandomNumberFromWeb.length > 0) {
-        Qn = true
-        myRandomNumber = (listOfRandomNumberFromWeb.pop()-minNum)/(maxNum-minNum);
-    } else {
-        Qn = false
-        myRandomNumber = Math.random();
-    }
-    titleElement.textContent = `${Qn ? 'q' : ''}🎲 ${myRandomNumber}`;
-    return myRandomNumber;
 }
 
 
@@ -248,48 +231,6 @@ function drawWinLine(combination) {
     winLineElement.style.transform = `rotate(${angle}rad)`;
     winLineElement.style.left = `${x1}px`;
     winLineElement.style.top = `${y1}px`;
-}
-
-
-jQuery(document).ready(function($) {
-    $('.dice-ajax-form').on('submit', function(e) {
-        e.preventDefault();
-        // send the ajax request, populate the list of random numbers
-        sendAjaxRequest().then((data) => {
-            listOfRandomNumberFromWeb = data.flat();
-        }).catch((err) => {
-            console.log(err);
-        });
-    });
-});
-
-
-function sendAjaxRequest() {
-    var $form = $('.dice-ajax-form');
-    proxy = 'https://cors-anywhere.herokuapp.com/';
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            type: "POST",
-            url: proxy + $form.attr('action'),
-            // url: $form.attr('action'),
-            data: $form.serialize(),
-            dataType: 'json',
-            success: function(data) {
-                var obj = JSON.parse(data);
-                if (obj.type == "success") {
-                    console.log("Your quantum random numbers are:<br/>");
-                    console.log(obj.output);
-                    resolve(obj.output);
-                } else {
-                    console.log(obj.message);
-                    reject(obj.message);
-                }
-            },
-            error: function(err) {
-                reject(err);
-            }
-        });
-    });
 }
 
 
