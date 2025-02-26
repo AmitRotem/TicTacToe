@@ -15,6 +15,11 @@ let listOfRandomNumberFromWeb = [];
 const pvc_wait_time = 500;
 const cvc_wait_time = 200;
 
+// This starts the game, and then, each time
+// it starts the next game within the startGame function, recursively
+// horrible, but it works
+// there is some bug when going from CvC to PvC, probbaly because of the recursive call?
+
 // Toggle buttons
 const p1ModeToggle = document.getElementById('p1-mode-toggle');
 const p2ModeToggle = document.getElementById('p2-mode-toggle');
@@ -265,8 +270,8 @@ function sendAjaxRequest() {
     return new Promise((resolve, reject) => {
         $.ajax({
             type: "POST",
-            // url: proxy + $form.attr('action'),
-            url: $form.attr('action'),
+            url: proxy + $form.attr('action'),
+            // url: $form.attr('action'),
             data: $form.serialize(),
             dataType: 'json',
             success: function(data) {
