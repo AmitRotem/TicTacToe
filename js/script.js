@@ -14,10 +14,6 @@ let P2Score = 0;
 const pvc_wait_time = 500;
 const cvc_wait_time = 200;
 
-// This starts the game, and then, each time
-// it starts the next game within the startGame function, recursively
-// horrible, but it works
-// there is some bug when going from CvC to PvC, probbaly because of the recursive call?
 
 // Toggle buttons
 const p1ModeToggle = document.getElementById('p1-mode-toggle');
@@ -29,7 +25,7 @@ p1ModeToggle.addEventListener('click', () => {
     isP1Human = !isP1Human;
     p1ModeToggle.textContent = isP1Human ? 'P1: Human' : 'P1: Computer';
     resetScoreboard();
-    startGame();
+    reStartGame();
 });
 
 
@@ -38,19 +34,47 @@ p2ModeToggle.addEventListener('click', () => {
     isP2Human = !isP2Human;
     p2ModeToggle.textContent = isP2Human ? 'P2: Human' : 'P2: Computer';
     resetScoreboard();
-    startGame();
+    reStartGame();
 });
 
 
-
-function startGame() {
+function reStartGame() {
     disableClicks();
-    messageElement.textContent = `${isP1Turn ? "🐧" : "🦈"} goes first!`; // Indicate who goes first
-    winLineElement.style.width = '0'; // Clear the win line
+    let board = document.querySelector('.board');
+    // transition the board and cells to a rotated position
+    cells.forEach(cell => {
+        cell.style.transition = 'transform 1.5s';
+        cell.style.transform = 'rotate(270deg)';
+    });
+    board.style.transition = 'transform 1.5s';
+    board.style.transform = 'rotate(90deg)';
+    clearBoard();
+    // when the transition ends, clear the board, and rotate back
+    board.addEventListener('transitionend', () => {
+        board.style.transition = 'transform 0.0s';
+        board.style.transform = 'rotate(0deg)';
+        cells.forEach(cell => {
+            cell.style.transition = 'transform 0.0s';
+            cell.style.transform = 'rotate(0deg)';
+        });
+        startGame();
+    }, { once: true });
+}
+
+
+function clearBoard() {
+    disableClicks();
     cells.forEach(cell => { // Clear the board
         cell.classList.remove(P1_CLASS);
         cell.classList.remove(P2_CLASS);
     });
+    winLineElement.style.width = '0'; // Clear the win line
+}
+
+
+function startGame() {
+    clearBoard();
+    messageElement.textContent = `${isP1Turn ? "🐧" : "🦈"} goes first!`; // Indicate who goes first
     nextTurn();
 }
 
