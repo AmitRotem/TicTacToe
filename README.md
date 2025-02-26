@@ -1,9 +1,10 @@
 # Tic Tac Toe
-game modes;
+Game modes;
 - PvP
 - PvC
 - CvC
+
 PC logic;
-    * completes a win if possible
-    * block opponent if needed
-    * choose randomly
+* Completes a win if possible
+* Block opponent if needed
+* Choose randomly
